@@ -10,9 +10,9 @@ Fetch and inspect nodes within Figma files via URL and PAT, with results seriali
 ## Usage
 
 ```bash
-npm add @ontech7/figma-node-query
-# or for script purposes
-npm install -D @ontech7/figma-node-query
+npm install @ontech7/figma-node-query dotenv
+# or
+npm install -D @ontech7/figma-node-query dotenv
 ```
 
 Retrieve/generate your **Figma personal Access Token** from:
