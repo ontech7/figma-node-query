@@ -23,20 +23,19 @@ function rgbaToHex(color: FigmaRGBA): string {
 }
 
 async function runExample() {
-  if (!process.env.FIGMA_FILE_KEY) {
-    throw new Error("Missing FIGMA_FILE_KEY in environment variables.");
-  }
+  const client = new FigmaNodeClient("qWrhGNCtP9avcXdYiaBVxE");
 
-  const figmaClient = new FigmaNodeClient(process.env.FIGMA_FILE_KEY);
+  const node = await client.node("1-5");
 
-  const node = await figmaClient.node("8-5");
-  const secondaryButton = node
-    .get("Wrapper")
-    .get("Secondary btn")
-    .toJSON<{ backgroundColor: FigmaRGBA }>();
-  const bgColor = secondaryButton.backgroundColor;
+  const buttonSection = node.get("Button").toJSON();
+  const firstButton = buttonSection.children?.[0];
+  console.log("HEX Color:", rgbaToHex(firstButton?.backgroundColor));
 
-  console.log("HEX Color:", rgbaToHex(bgColor));
+  const buttonText = node.get("#1:7").toJSON();
+  console.log("Font Family:", buttonText.style.fontFamily);
+
+  const firstButtonLabel = node.getAll("@COMPONENT").get("~State=").toJSON();
+  console.log("Font Properties:", firstButtonLabel);
 }
 
 runExample().catch((error) => console.log(error.message));
