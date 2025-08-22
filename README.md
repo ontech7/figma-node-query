@@ -9,19 +9,23 @@ Fetch and inspect nodes within Figma files via URL and PAT, with results seriali
 
 ## Usage
 
+1. Install the package as dependency or devDependency, based on your usage:
+
 ```bash
 npm install @ontech7/figma-node-query dotenv
 # or
 npm install -D @ontech7/figma-node-query dotenv
 ```
 
-Retrieve/generate your **Figma personal Access Token** from:
+2.  Retrieve/generate your **Figma personal Access Token** from:
 
 ```bash
 figma.com > Login > [Your Name] > Settings > Security > Personal access tokens > Generate new token
 ```
 
-Retrieve your file-key from **Figma project URL**:
+And add it in your `.env` file as `FIGMA_TOKEN` or export it in your terminal `export FIGMA_TOKEN=<your-token>`
+
+3. Retrieve your _file-key_ from **Figma project URL**:
 
 ```bash
 URL-like: https://www.figma.com/design/[file-key]/[file-name]
@@ -32,7 +36,7 @@ eg.: https://www.figma.com/design/qWrhGNCtP9avcXdYiaBVxE/%F0%9F%94%AE-Buttons-Li
 [file-name] => Buttons Library (Community)
 ```
 
-Copy the interested node-id from the **Figma project**:
+4. Copy the interested _node-id_ from the **Figma project**:
 
 ```bash
 Page-name > Node-name -> Copy as -> Copy link to selection
@@ -44,7 +48,7 @@ eg.: https://www.figma.com/design/qWrhGNCtP9avcXdYiaBVxE/%F0%9F%94%AE-Buttons-Li
 [node-id] => 1-5
 ```
 
-Import FigmaNodeClient to your project:
+5. Import `FigmaNodeClient` to your project:
 
 ```ts
 // index.ts
