@@ -1,0 +1,44 @@
+{
+  "name": "@ontech7/figma-node-query",
+  "version": "1.1.2",
+  "description": "Fetch and inspect nodes within Figma files via URL and PAT, with results serialized as JSON arrays.",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "test": "jest",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ontech7/figma-node-query.git"
+  },
+  "keywords": [
+    "figma",
+    "node",
+    "query",
+    "finder",
+    "api",
+    "web"
+  ],
+  "author": "Andrea Losavio (github.com/ontech7)",
+  "license": "BSD-3-Clause",
+  "peerDependencies": {
+    "dotenv": "*"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.3.0",
+    "dotenv": "^17.2.1",
+    "jest": "^30.0.0",
+    "ts-jest": "^29.4.1",
+    "typescript": "~5.8.3"
+  },
+  "homepage": "https://github.com/ontech7/figma-node-query",
+  "bugs": {
+    "url": "https://github.com/ontech7/figma-node-query/issues"
+  },
+  "readmeFilename": "README.md"
+}
