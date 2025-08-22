@@ -1,6 +1,6 @@
 {
   "name": "@ontech7/figma-node-query",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Fetch and inspect nodes within Figma files via URL and PAT, with results serialized as JSON arrays.",
   "main": "build/index.js",
   "types": "build/index.d.ts",
