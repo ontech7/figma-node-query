@@ -70,6 +70,8 @@ console.log(secondaryButton.backgroundColor);
 // { r: 0.12083333730697632, g: 0.5074999332427979, b: 0.7250000238418579, a: 1 }
 ```
 
+**Disclaimer**: if the response from `client.node(NODE_ID)` is too big, an exception will be thrown. The best practice should be calling smaller and more `client.node(NODE_ID)` instead.
+
 ---
 
 ## Methods
