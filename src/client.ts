@@ -36,10 +36,6 @@ export class FigmaNodeClient {
     cache.clear();
   }
 
-  public get ttl(): number {
-    return this._ttl;
-  }
-
   public get fileName(): string | undefined {
     return this._fileName;
   }
@@ -81,22 +77,43 @@ export class FigmaNodeClient {
     return data;
   }
 
-  private findNode(node: JSONObject, name: string): JSONObject[] {
-    let results: JSONObject[] = [];
-
+  private findNode(
+    node: JSONObject,
+    value: string,
+    lookupKey: LookupKey,
+    lookupMode: LookupMode,
+    results: JSONObject[] = []
+  ): JSONObject[] {
     if (Array.isArray(node)) {
       for (const item of node) {
-        results = results.concat(this.findNode(item, name));
+        this.findNode(item, value, lookupKey, lookupMode, results);
       }
     } else if (node && typeof node === "object") {
       const obj = node as JSONObject;
 
-      if (obj.name && String(obj.name) === name) {
+      if (
+        obj[lookupKey] &&
+        (lookupMode === undefined
+          ? String(obj[lookupKey]) === value
+          : lookupMode === "alike"
+          ? String(obj[lookupKey]).includes(value)
+          : lookupMode === "starts-with"
+          ? String(obj[lookupKey]).startsWith(value)
+          : lookupMode === "ends-with"
+          ? String(obj[lookupKey]).endsWith(value)
+          : false)
+      ) {
         results.push(obj);
       }
 
       for (const k in obj) {
-        results = results.concat(this.findNode(obj[k] as JSONObject, name));
+        this.findNode(
+          obj[k] as JSONObject,
+          value,
+          lookupKey,
+          lookupMode,
+          results
+        );
       }
     }
 
@@ -104,37 +121,93 @@ export class FigmaNodeClient {
   }
 }
 
+type LookupKey = "id" | "type" | "name";
+type LookupMode = "alike" | "starts-with" | "ends-with" | undefined;
+type Finder = (
+  node: JSONObject,
+  value: string,
+  lookupKey: LookupKey,
+  lookupMode: LookupMode,
+  array: JSONObject[]
+) => JSONObject[];
+
 class FigmaNodeCollection {
   private nodes: JSONObject[];
-  private finder: (node: JSONObject, name: string) => JSONObject[];
+  private finder: Finder;
   private single: boolean;
 
-  constructor(
-    nodes: JSONObject[],
-    finder: (node: JSONObject, name: string) => JSONObject[],
-    single = true
-  ) {
+  constructor(nodes: JSONObject[], finder: Finder, single = true) {
     this.nodes = nodes;
     this.finder = finder;
     this.single = single;
   }
 
-  get(name: string): FigmaNodeCollection {
+  private parseSelector(selector: string): {
+    selector: string;
+    lookupKey: LookupKey;
+    lookupMode?: LookupMode;
+  } {
+    let lookupKey: LookupKey = "name";
+    let lookupMode: LookupMode | undefined;
+
+    if (selector.startsWith("#")) {
+      lookupKey = "id";
+      selector = selector.slice(1);
+    } else if (selector.startsWith("@")) {
+      lookupKey = "type";
+      selector = selector.slice(1);
+    } else if (selector.startsWith("~")) {
+      lookupMode = "alike";
+      selector = selector.slice(1);
+    } else if (selector.startsWith("^")) {
+      lookupMode = "starts-with";
+      selector = selector.slice(1);
+    } else if (selector.startsWith("$")) {
+      lookupMode = "ends-with";
+      selector = selector.slice(1);
+    }
+
+    return { selector, lookupKey, lookupMode };
+  }
+
+  get(selector: string): FigmaNodeCollection {
+    const {
+      selector: parsedSelector,
+      lookupKey,
+      lookupMode,
+    } = this.parseSelector(selector);
+
     for (const node of this.nodes) {
-      const found = this.finder(node, name);
+      const found = this.finder(
+        node,
+        parsedSelector,
+        lookupKey,
+        lookupMode,
+        []
+      );
+
       if (found.length > 0) {
         return new FigmaNodeCollection([found[0]], this.finder, true);
       }
     }
-    throw new Error(`Node with name "${name}" not found`);
+
+    throw new Error(`Node with selector "${selector}" not found`);
   }
 
-  getAll(name: string): FigmaNodeCollection {
-    let all: JSONObject[] = [];
+  getAll(selector: string): FigmaNodeCollection {
+    const {
+      selector: parsedSelector,
+      lookupKey,
+      lookupMode,
+    } = this.parseSelector(selector);
+
+    const results: JSONObject[] = [];
+
     for (const node of this.nodes) {
-      all = all.concat(this.finder(node, name));
+      this.finder(node, parsedSelector, lookupKey, lookupMode, results);
     }
-    return new FigmaNodeCollection(all, this.finder, false);
+
+    return new FigmaNodeCollection(results, this.finder, false);
   }
 
   toJSON<T extends JSONObject = JSONObject>(): T;

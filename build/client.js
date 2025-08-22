@@ -21,9 +21,6 @@ export class FigmaNodeClient {
     static clearCache() {
         cache.clear();
     }
-    get ttl() {
-        return this._ttl;
-    }
     get fileName() {
         return this._fileName;
     }
@@ -51,20 +48,28 @@ export class FigmaNodeClient {
         cache.set(key, { timestamp: now, data });
         return data;
     }
-    findNode(node, name) {
-        let results = [];
+    findNode(node, value, lookupKey, lookupMode, results = []) {
         if (Array.isArray(node)) {
             for (const item of node) {
-                results = results.concat(this.findNode(item, name));
+                this.findNode(item, value, lookupKey, lookupMode, results);
             }
         }
         else if (node && typeof node === "object") {
             const obj = node;
-            if (obj.name && String(obj.name) === name) {
+            if (obj[lookupKey] &&
+                (lookupMode === undefined
+                    ? String(obj[lookupKey]) === value
+                    : lookupMode === "alike"
+                        ? String(obj[lookupKey].includes(value))
+                        : lookupMode === "starts-with"
+                            ? String(obj[lookupKey].startsWith(value))
+                            : lookupMode === "ends-with"
+                                ? String(obj[lookupKey].startsWith(value))
+                                : false)) {
                 results.push(obj);
             }
             for (const k in obj) {
-                results = results.concat(this.findNode(obj[k], name));
+                this.findNode(obj[k], value, lookupKey, lookupMode, results);
             }
         }
         return results;
@@ -79,21 +84,48 @@ class FigmaNodeCollection {
         this.finder = finder;
         this.single = single;
     }
-    get(name) {
+    parseSelector(selector) {
+        let lookupKey = "name";
+        let lookupMode;
+        if (selector.startsWith("#")) {
+            lookupKey = "id";
+            selector = selector.slice(1);
+        }
+        else if (selector.startsWith("@")) {
+            lookupKey = "type";
+            selector = selector.slice(1);
+        }
+        else if (selector.startsWith("~")) {
+            lookupMode = "alike";
+            selector = selector.slice(1);
+        }
+        else if (selector.startsWith("^")) {
+            lookupMode = "starts-with";
+            selector = selector.slice(1);
+        }
+        else if (selector.startsWith("$")) {
+            lookupMode = "ends-with";
+            selector = selector.slice(1);
+        }
+        return { selector, lookupKey, lookupMode };
+    }
+    get(selector) {
+        const { selector: parsedSelector, lookupKey, lookupMode, } = this.parseSelector(selector);
         for (const node of this.nodes) {
-            const found = this.finder(node, name);
+            const found = this.finder(node, parsedSelector, lookupKey, lookupMode, []);
             if (found.length > 0) {
                 return new FigmaNodeCollection([found[0]], this.finder, true);
             }
         }
-        throw new Error(`Node with name "${name}" not found`);
+        throw new Error(`Node with selector "${selector}" not found`);
     }
-    getAll(name) {
-        let all = [];
+    getAll(selector) {
+        const { selector: parsedSelector, lookupKey, lookupMode, } = this.parseSelector(selector);
+        const results = [];
         for (const node of this.nodes) {
-            all = all.concat(this.finder(node, name));
+            this.finder(node, parsedSelector, lookupKey, lookupMode, results);
         }
-        return new FigmaNodeCollection(all, this.finder, false);
+        return new FigmaNodeCollection(results, this.finder, false);
     }
     toJSON() {
         return this.single ? this.nodes[0] : this.nodes;

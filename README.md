@@ -5,6 +5,8 @@
 
 Fetch and inspect nodes within Figma files via URL and PAT, with results serialized as JSON arrays.
 
+---
+
 ## Usage
 
 ```bash
@@ -22,44 +24,74 @@ figma.com > Login > [Your Name] > Settings > Security > Personal access tokens >
 Retrieve your file-key from **Figma project URL**:
 
 ```bash
-eg.: https://www.figma.com/design/[file-key]/[file-name]
+URL-like: https://www.figma.com/design/[file-key]/[file-name]
+
+eg.: https://www.figma.com/design/qWrhGNCtP9avcXdYiaBVxE/%F0%9F%94%AE-Buttons-Library--Community-
+
+[file-key] => qWrhGNCtP9avcXdYiaBVxE
+[file-name] => Buttons Library (Community)
 ```
 
 Copy the interested node-id from the **Figma project**:
 
 ```bash
-eg.: Page-name > Node-name -> Copy as -> Copy link to selection
+Page-name > Node-name -> Copy as -> Copy link to selection
+
+URL-like: https://www.figma.com/design/[file-key]/[file-name]?node-id=[node-id]
+
+eg.: https://www.figma.com/design/qWrhGNCtP9avcXdYiaBVxE/%F0%9F%94%AE-Buttons-Library--Community-?node-id=1-5
+
+[node-id] => 1-5
 ```
+
+Import FigmaNodeClient to your project:
 
 ```ts
 // index.ts
+import { FigmaNodeClient } from "@ontech7/figma-node-query";
+
 type FigmaRGBA = { r: number; g: number; b: number; a: number };
 
-const figmaClient = new FigmaNodeClient("<your-file-key>");
+const client = new FigmaNodeClient("qWrhGNCtP9avcXdYiaBVxE"); // initialize client with [file-name]
 
-const node = await figmaClient.node("8-5");
+const node = await client.node("1-5"); // call Figma API with [node-id] to generate a FigmaNodeCollection instance
+
 const secondaryButton = node
-  .get("Wrapper")
-  .get("Secondary btn")
-  .toJSON<{ backgroundColor: FigmaRGBA }>();
-const bgColor = secondaryButton.backgroundColor;
+  .getAll("@COMPONENT") // search for all nodes with type = "COMPONENT"
+  .get("~State=") // search for first node with name that starts with "State="
+  .toJSON<{ backgroundColor: FigmaRGBA }>(); // transforms FigmaNodeCollection to serializable JSON object
+
+console.log(secondaryButton.backgroundColor);
+
+// { r: 0.12083333730697632, g: 0.5074999332427979, b: 0.7250000238418579, a: 1 }
 ```
 
 ---
 
 ## Methods
 
-| Name                                 | Description |
-| ------------------------------------ | ----------- |
-| `new FigmaNodeClient(fileKey, ttl?)` | ...         |
-| `ttl`                                | ...         |
-| `fileName`                           | ...         |
-| `lastModified`                       | ...         |
-| `node(nodeId)`                       | ...         |
-| `get(name)`                          | ...         |
-| `getAll(name)`                       | ...         |
-| `toJSON<T>()`                        | ...         |
-| `FigmaNodeClient.clearCache()`       | ...         |
+| Name                                 | Description                                                                  |
+| ------------------------------------ | ---------------------------------------------------------------------------- |
+| `new FigmaNodeClient(fileKey, ttl?)` | Instance of a Figma client                                                   |
+| `fileName`                           | Title of the Figma file                                                      |
+| `lastModified`                       | Date of the last update done by an author of the Figma file                  |
+| `node(nodeId)`                       | Calls Figma API to retrieve the node by [node-id]                            |
+| `get(selector)`                      | Retrieve the first node with specified selector. Throws error if no match.   |
+| `getAll(selector)`                   | Retrieve all nodes with specified selector. Returns empty array if no match. |
+| `toJSON<T>()`                        | Result as JSONObject (or JSONObject if getAll method)                        |
+| `FigmaNodeClient.clearCache()`       | Clear any current cache                                                      |
+
+---
+
+## Special Lookup Tokens
+
+| Name | Description                                                      |
+| ---- | ---------------------------------------------------------------- |
+| `#`  | Look up for `id`                                                 |
+| `@`  | Look up for `type`                                               |
+| `~`  | Look up for `name` if `alike` (a.k.a. `s1.includes(s2)`)         |
+| `^`  | Look up for `name` if `starts-with` (a.k.a. `s1.startsWith(s2)`) |
+| `$`  | Look up for `name` if `starts-with` (a.k.a. `s1.endWith(s2)`)    |
 
 ---
 

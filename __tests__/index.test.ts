@@ -19,13 +19,16 @@ describe("FigmaNodeClient", () => {
     document: {
       id: "123",
       name: "CTA",
+      type: "COMPONENT",
       children: [
         {
           id: "a",
           name: "Primary-Button",
+          type: "STYLE",
           children: [
             {
               id: "c",
+              type: "TEXT",
               name: "Label",
             },
           ],
@@ -33,6 +36,7 @@ describe("FigmaNodeClient", () => {
         {
           id: "b",
           name: "Primary-Button",
+          type: "STYLE",
         },
       ],
     },
@@ -53,16 +57,6 @@ describe("FigmaNodeClient", () => {
   it("throws if FIGMA_TOKEN is missing", () => {
     delete process.env.FIGMA_TOKEN;
     expect(() => new FigmaNodeClient(FILE_KEY)).toThrow("Missing FIGMA_TOKEN.");
-  });
-
-  it("respects default ttl", () => {
-    const client = new FigmaNodeClient(FILE_KEY);
-    expect(client.ttl).toBe(60_000);
-  });
-
-  it("respects custom ttl", () => {
-    const client = new FigmaNodeClient(FILE_KEY, 5000);
-    expect(client.ttl).toBe(5000);
   });
 
   it("fetches node and caches the response", async () => {
@@ -126,9 +120,11 @@ describe("FigmaNodeClient", () => {
     expect(node.get("Primary-Button").toJSON()).toMatchObject({
       id: "a",
       name: "Primary-Button",
+      type: "STYLE",
       children: [
         {
           id: "c",
+          type: "TEXT",
           name: "Label",
         },
       ],
@@ -152,17 +148,133 @@ describe("FigmaNodeClient", () => {
       {
         id: "a",
         name: "Primary-Button",
+        type: "STYLE",
         children: [
           {
             id: "c",
+            type: "TEXT",
             name: "Label",
           },
         ],
       },
       {
         id: "b",
+        type: "STYLE",
         name: "Primary-Button",
       },
     ]);
+  });
+
+  it("get() find node by id", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => sampleResponse,
+    });
+
+    const client = new FigmaNodeClient(FILE_KEY);
+
+    const node = await client.node(NODE_ID);
+
+    expect(node.get("#a").toJSON()).toMatchObject({
+      id: "a",
+      name: "Primary-Button",
+      type: "STYLE",
+      children: [
+        {
+          id: "c",
+          type: "TEXT",
+          name: "Label",
+        },
+      ],
+    });
+  });
+
+  it("get() find node by type", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => sampleResponse,
+    });
+
+    const client = new FigmaNodeClient(FILE_KEY);
+
+    const node = await client.node(NODE_ID);
+
+    expect(node.get("@TEXT").toJSON()).toMatchObject({
+      id: "c",
+      type: "TEXT",
+      name: "Label",
+    });
+  });
+
+  it("get() find node by name (alike)", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => sampleResponse,
+    });
+
+    const client = new FigmaNodeClient(FILE_KEY);
+
+    const node = await client.node(NODE_ID);
+
+    expect(node.get("~-Button").toJSON()).toMatchObject({
+      id: "a",
+      name: "Primary-Button",
+      type: "STYLE",
+      children: [
+        {
+          id: "c",
+          type: "TEXT",
+          name: "Label",
+        },
+      ],
+    });
+  });
+
+  it("get() find node by name (starts-with)", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => sampleResponse,
+    });
+
+    const client = new FigmaNodeClient(FILE_KEY);
+
+    const node = await client.node(NODE_ID);
+
+    expect(node.get("^Primary").toJSON()).toMatchObject({
+      id: "a",
+      name: "Primary-Button",
+      type: "STYLE",
+      children: [
+        {
+          id: "c",
+          type: "TEXT",
+          name: "Label",
+        },
+      ],
+    });
+  });
+
+  it("get() find node by name (ends-with)", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => sampleResponse,
+    });
+
+    const client = new FigmaNodeClient(FILE_KEY);
+
+    const node = await client.node(NODE_ID);
+
+    expect(node.get("$-Button").toJSON()).toMatchObject({
+      id: "a",
+      name: "Primary-Button",
+      type: "STYLE",
+      children: [
+        {
+          id: "c",
+          type: "TEXT",
+          name: "Label",
+        },
+      ],
+    });
   });
 });

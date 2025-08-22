@@ -12,6 +12,6 @@ module.exports = {
     "src/**/*.{ts,tsx}",
     "!src/**/*.d.ts"
   ],
-  coverageDirectory: "coverage",
+  // coverageDirectory: "coverage",
   // setupFiles: ["dotenv/config"],
 };
