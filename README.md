@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@ontech7/figma-node-query.svg?style=round&colorB=blue)](https://www.npmjs.com/package/@ontech7/figma-node-query)
 [![npm](https://img.shields.io/npm/dm/@ontech7/figma-node-query.svg?style=round&colorB=007ec6)](https://www.npmjs.com/package/@ontech7/figma-node-query)
 
-Fetch and inspect nodes within Figma files via URL and PAT, with results serialized as JSON arrays.
+Fetch and inspect nodes within Figma files via URL and PAT, with results serialized as JSON objects/arrays.
 
 ---
 
@@ -97,7 +97,7 @@ console.log(secondaryButton.backgroundColor);
 | `@`  | Look up for `type`                                               |
 | `~`  | Look up for `name` if `alike` (a.k.a. `s1.includes(s2)`)         |
 | `^`  | Look up for `name` if `starts-with` (a.k.a. `s1.startsWith(s2)`) |
-| `$`  | Look up for `name` if `ends-with` (a.k.a. `s1.endsWith(s2)`)    |
+| `$`  | Look up for `name` if `ends-with` (a.k.a. `s1.endsWith(s2)`)     |
 
 ---
 

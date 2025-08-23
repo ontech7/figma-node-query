@@ -3,12 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "tsx index.ts"
+    "example": "tsx src/example.ts",
+    "export": "tsx src/export.ts"
   },
   "devDependencies": {
     "typescript": "^5.9.2",
     "tsx": "^4.20.4",
     "@types/node": "^24.3.0",
+    "@9elt/color": "^0.2.0",
     "@ontech7/figma-node-query": "file:../"
   }
 }

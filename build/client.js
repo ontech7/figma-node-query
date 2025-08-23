@@ -60,11 +60,11 @@ export class FigmaNodeClient {
                 (lookupMode === undefined
                     ? String(obj[lookupKey]) === value
                     : lookupMode === "alike"
-                        ? String(obj[lookupKey].includes(value))
+                        ? String(obj[lookupKey]).includes(value)
                         : lookupMode === "starts-with"
-                            ? String(obj[lookupKey].startsWith(value))
+                            ? String(obj[lookupKey]).startsWith(value)
                             : lookupMode === "ends-with"
-                                ? String(obj[lookupKey].startsWith(value))
+                                ? String(obj[lookupKey]).endsWith(value)
                                 : false)) {
                 results.push(obj);
             }
